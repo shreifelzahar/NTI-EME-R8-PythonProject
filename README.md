@@ -41,3 +41,8 @@ The VM Monitoring Tool is an All-in-One system monitoring application that monit
 
 ### Testing Tab
 - **Perform stress tests on the CPU and other components to evaluate performance under load.**
+
+
+## Alternative to CPU-Z for Linux
+
+Currently, there is no direct equivalent of CPU-Z available for Linux systems. However, **CPU-X** is an alternative that provides similar functionality, including detailed hardware information. Unfortunately, CPU-X does not include a stress test script, which is a key feature of the **VMware Virtual Machine Monitoring Tool**. This tool offers comprehensive monitoring and stress testing capabilities for users operating in Linux environments.
