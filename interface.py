@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import customtkinter
-import system_monitoring_project as data
+import system_monitoring as data
 
 
 # Set appearance mode and theme
