@@ -1,5 +1,6 @@
 import os
 import platform
+import re
 def GetCoreTemperature():
     import psutil
     return ((str(psutil.sensors_temperatures()["coretemp"][0].current))+" C")
@@ -24,8 +25,8 @@ def GetMemorySpeed():
     return f"{output.read().strip()} Mhz"
 
 def GetCpuModel():
-    res = os.popen("cat /proc/cpuinfo | grep 'model name' | cut -d: -f2")
-    return res.read().splitlines()[0].strip()
+    raw_cpu_model = os.popen("cat /proc/cpuinfo | grep 'model name' | cut -d: -f2")
+    return raw_cpu_model.read().splitlines()[0].strip()
 def GetCpuCores():
     cores = set()
     raw_data = os.popen("cat /proc/cpuinfo").readlines()
