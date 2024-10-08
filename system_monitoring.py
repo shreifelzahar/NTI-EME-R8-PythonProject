@@ -5,6 +5,7 @@ def GetCoreTemperature():
     import psutil
     return ((str(psutil.sensors_temperatures()["coretemp"][0].current))+" C")
 
+
 def GetBatteryVoltage():
     volatge_file = open("/sys/class/power_supply/BAT0/hwmon2/in0_input", "r")
     voltage = f"{(int(volatge_file.read())/1000):.2f} V"
