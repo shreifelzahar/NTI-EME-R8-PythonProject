@@ -4,3 +4,5 @@ customtkinter
 os
 platform
 re
+time
+multiprocessing
