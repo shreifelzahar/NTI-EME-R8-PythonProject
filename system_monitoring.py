@@ -1,9 +1,19 @@
 import os
 import platform
 import re
+import time
+import multiprocessing
+import psutil
+
+mem_total_size="{:.2f} GB".format(int(os.popen("cat /proc/meminfo | awk ' NR==1 {print $2}' ").read().strip())/1024/1024) 
+
+
 def GetCoreTemperature():
     import psutil
     return ((str(psutil.sensors_temperatures()["coretemp"][0].current))+" C")
+
+def GetCpuUsage():
+    return psutil.cpu_percent()
 
 def GetBatteryVoltage():
     volatge_file = open("/sys/class/power_supply/BAT0/hwmon2/in0_input", "r")
@@ -20,13 +30,11 @@ def GetBatteryPower():
     power = voltage*current/1000
     return "{:.2f} W".format(power)
 
-def GetMemorySpeed():
-    output = os.popen("sudo dmidecode -t memory | grep -i -m1 '^[[:space:]]speed' | cut -d: -f2 | cut -d\" \" -f2")
-    return f"{output.read().strip()} Mhz"
+
 
 def GetCpuModel():
-    raw_cpu_model = os.popen("cat /proc/cpuinfo | grep 'model name' | cut -d: -f2")
-    return raw_cpu_model.read().splitlines()[0].strip()
+    res = os.popen("cat /proc/cpuinfo | grep 'model name' | cut -d: -f2")
+    return res.read().splitlines()[0].strip()
 def GetCpuCores():
     cores = set()
     raw_data = os.popen("cat /proc/cpuinfo").readlines()
@@ -88,12 +96,52 @@ def GetOsInfo():
 
     return os_info
 
+def GetMemoryInfo_Static():
+    global mem_total_size
+    mem_info_static_dic = {}
+    mem_info_static_dic["Type"] = os.popen("sudo dmidecode --type memory | awk ' /Type/  {print $2}' | sed -n \"2p\" ").read().strip()
+    mem_info_static_dic["Speed"] = "{} Mhz".format(os.popen("sudo dmidecode -t memory | grep -i -m1 '^[[:space:]]speed' | cut -d: -f2 | cut -d\" \" -f2").read().strip()) 
+    mem_info_static_dic["Channel"] =os.popen("sudo dmidecode --type memory | awk ' /Devices/  {print $4}' ").read().strip()
+    mem_info_static_dic["Total_Size"]=mem_total_size
+    return mem_info_static_dic
+
+def GetMemoryInfo_Dynamic():
+    global mem_total_size
+    mem_info_dynamic_dic = {}
+    mem_info_dynamic_dic["Available_Size"]="{:.2f} GB".format(int(os.popen("cat /proc/meminfo | awk ' NR==3 {print $2}' ").read().strip())/1024/1024) 
+    mem_info_dynamic_dic["Usage"]="{:.2f} %".format((float(mem_total_size.split()[0]) - float(mem_info_dynamic_dic["Available_Size"].split()[0]))/ float(mem_total_size.split()[0]) * 100) 
+    return mem_info_dynamic_dic
 
 
+def StressCpu():
+    while True:
+        counter = 0
+        for i in range(30000000):
+            counter += i
+
+if __name__ == "__main__":
+    num_cores = multiprocessing.cpu_count()
+
+    processes = []
+
+    for i in range(num_cores):
+        process = multiprocessing.Process(target=StressCpu)
+        processes.append(process)
+        process.start()
+
+    try:
+        time.sleep(10)
+    except KeyboardInterrupt:
+        print("Closed")
+
+    for process in processes:
+        process.terminate()
+        process.join()
+
+"""
 print(GetCoreTemperature())
 print(GetBatteryVoltage())
 print(GetBatteryPower())
-print(GetMemorySpeed())
 print(GetCoreVoltage())
 print(GetBiosInfo())
 print(GetOsInfo())
@@ -103,3 +151,10 @@ print(GetCpuThreads())
 print(GetMotherboardModel())
 print(GetMotherboardVendor())
 print(GetCacheSize())
+print(GetMemoryInfo_Static()["Type"])
+print(GetMemoryInfo_Static()["Speed"])
+print(GetMemoryInfo_Static()["Channel"])
+print(GetMemoryInfo_Static()["Total_Size"])
+print(GetMemoryInfo_Dynamic()["Available Size"])
+print(GetMemoryInfo_Dynamic()["Usage"])
+"""
